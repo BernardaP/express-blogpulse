@@ -1,8 +1,10 @@
-'use strict'
+'use strict';
 
 module.exports = {
-  up: function (queryInterface, Sequelize) {
-    return queryInterface.bulkInsert('authors', [
+  up: async (queryInterface, Sequelize) => {
+    await queryInterface.bulkDelete('authors', null, {truncate: true, cascade: true, restartIdentity: true});
+
+    const authors = await queryInterface.bulkInsert('authors', [
       { firstName: 'Keith',
         lastName: 'Fuller',
         bio: 'Key contributor to various newspapers in the Greater Puget Sound area. Father. Bike enthusiast.',
@@ -21,9 +23,12 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date()
       }
-    ], { returning: true }).then(function(authors) {
-      return queryInterface.bulkInsert('articles', [
-        { title: 'Bike usage in Seattle grows as city plans new lanes.',
+    ], {returning: true})
+    console.log('author bulk insert: ', authors);
+
+    await queryInterface.bulkDelete('articles', null, {truncate: true, cascade: true, restartIdentity: true});
+    const articles = await queryInterface.bulkInsert('articles', [
+      { title: 'Bike usage in Seattle grows as city plans new lanes.',
           content: 'Bike lanes in the downtown area, as well as the surrounding areas, are being installed.',
           authorId: authors[0].id,
           createdAt: new Date(),
@@ -41,11 +46,11 @@ module.exports = {
           createdAt: new Date(),
           updatedAt: new Date()
         }
-      ])
-    })
+    ], {returning: true})
+    console.log('articles bulk insert: ', articles);
   },
 
-  down: function (queryInterface, Sequelize) {
-    return queryInterface.bulkDelete('authors', null, {})
+  down: async (queryInterface, Sequelize) => {
+    await queryInterface.bulkDelete('authors', null, {});
   }
-}
+};
